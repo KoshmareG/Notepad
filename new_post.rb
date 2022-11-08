@@ -22,6 +22,10 @@ entry = Post.create(choices[choice])
 
 entry.read_from_console
 
-id = entry.save_to_db
+result = entry.save_to_db
 
-puts "Запись сохранена, id = #{id}"
+if result.is_a? Integer
+  puts "Запись сохранена, id = #{result}"
+else
+  puts result
+end

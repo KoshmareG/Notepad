@@ -1,7 +1,7 @@
 require 'sqlite3'
 
 class Post
-  @@SQLITE_DB_FILE = File.join(__dir__, 'notepad.sqlite')
+  SQLITE_DB_FILE = File.join(__dir__, 'notepad.sqlite')
 
   def self.post_types
     {'Memo' => Memo, 'Task' => Task, 'Link' => Link}
@@ -11,50 +11,55 @@ class Post
     post_types[type].new
   end
 
-  def self.find(limit, type, id)
-    db = SQLite3::Database.open(@@SQLITE_DB_FILE)
+  def self.find_by_id(id)
+    db = SQLite3::Database.open(SQLITE_DB_FILE)
 
-    if !id.nil?
-      db.results_as_hash = true
+    db.results_as_hash = true
 
+    begin
       result = db.execute("SELECT * FROM posts WHERE rowid = ?", id)
-
-      db.close
-
-      if result.empty?
-        puts "Такой id #{id} не найден"
-        nil
-      else
-        result = result[0]
-
-        post = create(result['type'])
-
-        post.load_data(result)
-
-        post
-      end
-    else
-      db.results_as_hash = false
-
-      query = 'SELECT rowid, * FROM posts '
-
-      query += 'WHERE type = :type ' unless type.nil?
-      query += 'ORDER by rowid DESC '
-
-      query += 'LIMIT :limit ' unless limit.nil?
-
-      statement = db.prepare(query)
-
-      statement.bind_param('type', type) unless type.nil?
-      statement.bind_param('limit', limit) unless limit.nil?
-
-      result = statement.execute!
-
-      statement.close
-      db.close
-
-      result
+    rescue SQLite3::SQLException => error
+      return "Не удалось выполнить запрос в базе notepad.sqlite: #{error.message}"
     end
+
+    db.close
+
+    return "Запись с id - #{id} не найдена" if result.empty?
+
+    post = create(result.first['type'])
+
+    post.load_data(result.first)
+
+    post
+  end
+
+  def self.find(limit, type)
+    db = SQLite3::Database.open(SQLITE_DB_FILE)
+
+    db.results_as_hash = false
+
+    query = 'SELECT rowid, * FROM posts '
+
+    query += 'WHERE type = :type ' unless type.nil?
+    query += 'ORDER by rowid DESC '
+
+    query += 'LIMIT :limit ' unless limit.nil?
+
+    statement = db.prepare(query)
+
+    statement.bind_param('type', type) unless type.nil?
+    statement.bind_param('limit', limit) unless limit.nil?
+
+    begin
+      result = statement.execute!
+    rescue SQLite3::SQLException => error
+      return "Не удалось выполнить запрос в базе notepad.sqlite: #{error.message}"
+    end
+
+    statement.close
+    db.close
+
+    result
   end
 
   def initialize
@@ -83,18 +88,22 @@ class Post
   end
 
   def save_to_db
-    db = SQLite3::Database.open(@@SQLITE_DB_FILE)
+    db = SQLite3::Database.open(SQLITE_DB_FILE)
     db.results_as_hash = true
 
-    db.execute(
-      'INSERT INTO posts (' +
-        to_db_hash.keys.join(',') +
-        ')' +
-        ' VALUES (' +
-        ('?,' * to_db_hash.keys.size).chomp(',') +
-        ')',
-      to_db_hash.values
-    )
+    begin
+      db.execute(
+        'INSERT INTO posts (' +
+          to_db_hash.keys.join(',') +
+          ')' +
+          ' VALUES (' +
+          ('?,' * to_db_hash.keys.size).chomp(',') +
+          ')',
+        to_db_hash.values
+      )
+    rescue SQLite3::SQLException => error
+      return "Не удалось выполнить запрос в базе notepad.sqlite: #{error.message}"
+    end
 
     insert_row_id = db.last_insert_row_id
 

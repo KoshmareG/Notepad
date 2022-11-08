@@ -19,7 +19,11 @@ OptionParser.new do |opt|
   opt.on('--limit NUMBER', 'сколько последних постов показать (по умолчанию все)') { |o| options[:limit] = o }
 end.parse!
 
-result = Post.find(options[:limit], options[:type], options[:id])
+if !options[:id].nil?
+  result = Post.find_by_id(options[:id])
+else
+  result = Post.find(options[:limit], options[:type])
+end
 
 if result.is_a? Post
   puts "Запись #{result.class.name}, id = #{options[:id]}"
@@ -27,6 +31,8 @@ if result.is_a? Post
   result.to_strings.each do |line|
     puts line
   end
+elsif result.is_a? String
+  puts result
 else
   print "| id\t| @type\t| @created_at\t\t\t| @text\t\t\t| @url\t\t| @due_date\t"
 
