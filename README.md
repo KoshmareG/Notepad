@@ -2,7 +2,7 @@
 
 Version 2.0
 
-Notepad in Ruby working from the console.
+Notepad in Ruby working from the console. The application was created in Ruby 3.1.2
 
 You will need SQLite3 installed to work.
 
@@ -19,6 +19,8 @@ To create a new entry, run:
 ```
 ruby new_post.rb
 ```
+
+Then use numbers to indicate the type of note you are creating.
 
 To read, run:
 
