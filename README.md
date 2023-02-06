@@ -14,32 +14,79 @@ You can create:
 
 Recordings are saved to `notepad.sqlite` file
 
+### New entry
+
 To create a new entry, run:
 
 ```
-ruby new_post.rb
+$ ruby new_post.rb
+```
+
+Program output:
+
+```
+> Привет, я твой блокнот! Версия 2 + Sqlite
+> Что хотите записать в блокноте?
+>         0. Memo
+>         1. Task
+>         2. Link
+
 ```
 
 Then use numbers to indicate the type of note you are creating.
 
+### Reading notes
+
 To read, run:
 
 ```
-ruby read.rb
+$ ruby read.rb
 ```
 
-Reading options:
+Displays all saved notes. To get specific records, use the `read options`.
+
+### Reading options
+
+Options passed when reading:
 
 ```
-# type of posts to read (by default, any)
 --type POST_TYPE
+# type of posts to read (by default, any)
 
-# show post with specific id
 --id POST_ID
+# show post with specific id
 
-# limit entries to read
 --limit NUMBER
+# limit entries to read
 
-# help
 --h
+# help
+```
+
+You can pass several options.
+
+### Examples
+
+Need to get all the links:
+
+```
+$ ruby read.rb --type Link
+```
+
+Get the 3 latest memo:
+
+```
+$ ruby read.rb --type Memo --limit 3
+```
+
+Get the last 5 entries:
+
+```
+$ ruby read.rb --limit 5
+```
+
+Entry number 5
+
+```
+$ ruby read.rb --id 5
 ```
